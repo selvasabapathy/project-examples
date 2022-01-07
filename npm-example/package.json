@@ -2,12 +2,11 @@
   "name": "npm-example",
   "version": "0.0.3",
   "scripts": {
-    "start": "node helloworld"
+    "start": "node helloworld",
+    "build": "npm build"
   },
   "dependencies": {
-    "send": "^0.16.2"
-  },
-  "devDependencies": {
+    "send": "^0.16.2",
     "debug": "^4.1.1"
   }
 }
