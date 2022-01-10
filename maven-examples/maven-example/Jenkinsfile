@@ -1,10 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-11.0.13.0.8-4.el8_5.x86_64'
-        MAVEN_HOME = '/usr/share/maven'
-    }
+    //     environment {
+    //         JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-11.0.13.0.8-4.el8_5.x86_64'
+    //         MAVEN_HOME = '/usr/share/maven'
+    //     }
 
     stages {
         stage('Info') {
@@ -21,22 +21,21 @@ pipeline {
             }
         }
 
-        stage ('Artifactory') {
+        stage ('Config') {
             steps {
+                echo 'Configure artifactory deployer and resolver...'
                 //                 rtServer (
                 //                     id: "ARTIFACTORY_SERVER",
                 //                     url: 'http://10.176.0.212',
                 //                     credentialsId: 'artifactoryCredentials'
                 //                 )
-
                 rtMavenDeployer (
                     id: 'MAVEN_DEPLOYER',
                     serverId: 'ARTIFACTORY_SERVER',
                     releaseRepo: 'pe-maven-virtual',
                     snapshotRepo: 'pe-maven-virtual',
-                    properties: ['deployerName=Selva', 'deployerName=Atlanta']
+                    properties: ['deployerName=Selva', 'deployerLocation=Atlanta']
                 )
-
                 rtMavenResolver (
                     id: 'MAVEN_RESOLVER',
                     serverId: 'ARTIFACTORY_SERVER',
@@ -46,25 +45,26 @@ pipeline {
             }
         }
 
-        stage ('Exec Maven') {
+        stage ('Build') {
             steps {
+                echo 'Build the application...'
                 rtMavenRun (
-//                     tool: MAVEN_DEPLOYER_RESOLVER,
+                    tool: 'MAVEN-3.5.4',
                     pom: 'maven-examples/maven-example/pom.xml',
                     goals: 'clean install',
-                    deployerId: "MAVEN_DEPLOYER",
-                    resolverId: "MAVEN_RESOLVER"
+                    deployerId: 'MAVEN_DEPLOYER',
+                    resolverId: 'MAVEN_RESOLVER'
                 )
             }
         }
 
-        stage ('Publish build info') {
+        stage ('Build info') {
             steps {
+                echo 'Push build info to artifactory...'
                 rtPublishBuildInfo (
                     serverId: "ARTIFACTORY_SERVER"
                 )
             }
         }
-
     }
 }
