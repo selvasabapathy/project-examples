@@ -10,8 +10,8 @@ pipeline {
         }
 
         stage ('Clone') {
-            echo 'Clone the application source...'
             steps {
+                echo 'Clone the application source...'
                 git branch: 'docker-dev', url: "https://github.com/SelvaJFrog/project-examples.git"
             }
         }
