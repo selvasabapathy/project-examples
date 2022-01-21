@@ -2,23 +2,31 @@ pipeline {
     agent any
 
     stages {
-        stage ('Clone') {
+        stage('Info') {
             steps {
-                git branch: 'master', url: "https://github.com/jfrog/project-examples.git"
+                echo 'Print thee system environment...'
+                sh 'printenv'
             }
         }
 
-        stage ('Artifactory configuration') {
+        stage ('Clone') {
+            echo 'Clone the application source...'
+            steps {
+                git branch: 'docker-dev', url: "https://github.com/SelvaJFrog/project-examples.git"
+            }
+        }
+
+        stage ('Config') {
             steps {
                 rtServer (
-                    id: "ARTIFACTORY_SERVER",
-                    url: SERVER_URL,
-                    credentialsId: CREDENTIALS
+                    id: 'ARTIFACTORY_SERVER',
+                    url: 'http://10.176.0.212',
+                    credentialsId: 'artifactoryCredentials'
                 )
             }
         }
 
-        stage ('Build docker image') {
+        stage ('Dockerize') {
             steps {
                 script {
                     docker.build(ARTIFACTORY_DOCKER_REGISTRY + '/hello-world:latest', 'jenkins-examples/pipeline-examples/resources')
@@ -26,23 +34,19 @@ pipeline {
             }
         }
 
-        stage ('Push image to Artifactory') {
+        stage ('Push') {
             steps {
                 rtDockerPush(
-                    serverId: "ARTIFACTORY_SERVER",
+                    serverId: 'ARTIFACTORY_SERVER',
                     image: ARTIFACTORY_DOCKER_REGISTRY + '/hello-world:latest',
-                    // Host:
-                    // On OSX: "tcp://127.0.0.1:1234"
-                    // On Linux can be omitted or null
                     host: HOST_NAME,
-                    targetRepo: 'docker-local',
-                    // Attach custom properties to the published artifacts:
-                    properties: 'project-name=docker1;status=stable'
+                    targetRepo: 'pe-docker-dev-local',
+                    properties: 'project-name=pe-docker;status=stable'
                 )
             }
         }
 
-        stage ('Publish build info') {
+        stage ('Build info') {
             steps {
                 rtPublishBuildInfo (
                     serverId: "ARTIFACTORY_SERVER"
