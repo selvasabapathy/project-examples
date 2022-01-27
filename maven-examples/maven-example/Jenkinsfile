@@ -66,5 +66,15 @@ pipeline {
                 )
             }
         }
+
+        stage ('Scan') {
+            steps {
+                echo 'Scan for security & license...'
+                xrayScan (
+                    serverId: "ARTIFACTORY_SERVER",
+                    failBuild: false
+                )
+            }
+        }
     }
 }
