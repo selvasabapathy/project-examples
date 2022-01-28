@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    tools {nodejs "NodeJS17"}
+
+    environment {
+        JFROG_SERVER_ID = 'selvas-cli-artifactory'
+        JFROG_PLATFORM_URL = 'http://10.176.0.212:8082/'
+        JFROG_PLATFORM_CREDS = credentials('SELVAS-ARTIFACTORY')
+        JFROG_RT_NPM_REPO = 'pe-npm-cli-virtual'
+    }
+
+    stages {
+        stage('Info') {
+            steps {
+                echo 'Print the system environment and clean existing CLI configuration'
+                sh 'printenv'
+                sh 'jf c remove'
+            }
+        }
+
+        stage ('Clone') {
+            steps {
+                echo 'Clone the application source...'
+                git branch: 'npm-cli-dev', url: "https://github.com/selvasabapathy/project-examples.git"
+            }
+        }
+
+        stage('JFrog Platform') {
+            steps {
+                echo 'Configure connection to JFrog Platform'
+                sh 'jf c add --url $JFROG_PLATFORM_URL --user $JFROG_PLATFORM_CREDS_USR --password $JFROG_PLATFORM_CREDS_PSW $JFROG_SERVER_ID'
+                sh 'jf npmc --repo-deploy $JFROG_RT_NPM_REPO --repo-resolve $JFROG_RT_NPM_REPO --server-id-deploy $JFROG_SERVER_ID --server-id-resolve $JFROG_SERVER_ID'
+            }
+        }
+
+        stage ('Build') {
+            steps {
+                echo 'Build the application...'
+                sh 'jf npm install npm-example/'
+            }
+        }
+
+        stage ('Publish Build') {
+            steps {
+                echo 'Push build to artifactory'
+                sh 'jf npm publish npm-example/'
+            }
+        }
+
+        stage ('Build info') {
+            steps {
+                echo 'Add/Collect build info'
+                sh 'jf rt bag'
+                sh 'jf rt bce'
+            }
+        }
+
+        stage ('Pubish Build info') {
+            steps {
+                echo 'Push build info to artifactory'
+                sh 'jf rt bp npm-cli-dev 1'
+            }
+        }
+
+        stage ('Scan') {
+            steps {
+                echo 'Scan for security & license'
+                sh 'jf xr an --fail false'
+            }
+        }
+    }
+}

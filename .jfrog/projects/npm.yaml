@@ -1,0 +1,8 @@
+version: 1
+type: npm
+resolver:
+  repo: pe-npm-cli-virtual
+  serverId: selvas-artifactory
+deployer:
+  repo: pe-npm-cli-virtual
+  serverId: selvas-artifactory

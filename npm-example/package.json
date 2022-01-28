@@ -5,9 +5,14 @@
     "start": "node helloworld"
   },
   "dependencies": {
+    "npm": "^8.4.0",
     "send": "^0.16.2"
   },
   "devDependencies": {
     "debug": "^4.1.1"
-  }
+  },
+  "description": "Artifactory provides full support for managing npm packages and ensures optimal and reliable access to npmjs.org. It also allows aggregating multiple npm registries under a virtual repository Artifactory, which provides access to all your npm packages through a single URL for both upload and download.",
+  "main": "helloworld.js",
+  "author": "",
+  "license": "ISC"
 }
