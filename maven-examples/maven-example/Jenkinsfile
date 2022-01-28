@@ -17,63 +17,28 @@ pipeline {
         stage ('Clone') {
             steps {
                 echo 'Clone the application source...'
-                git branch: 'maven-dev', url: "https://github.com/selvasabapathy/project-examples.git"
-            }
-        }
-
-        stage ('Config') {
-            steps {
-                echo 'Configure artifactory deployer and resolver...'
-                //                 rtServer (
-                //                     id: "ARTIFACTORY_SERVER",
-                //                     url: 'http://10.176.0.212',
-                //                     credentialsId: 'artifactoryCredentials'
-                //                 )
-                rtMavenDeployer (
-                    id: 'MAVEN_DEPLOYER',
-                    serverId: 'ARTIFACTORY_SERVER',
-                    releaseRepo: 'pe-maven-virtual',
-                    snapshotRepo: 'pe-maven-virtual',
-                    properties: ['deployerName=Selva', 'deployerLocation=Atlanta']
-                )
-                rtMavenResolver (
-                    id: 'MAVEN_RESOLVER',
-                    serverId: 'ARTIFACTORY_SERVER',
-                    releaseRepo: 'pe-maven-virtual',
-                    snapshotRepo: 'pe-maven-virtual'
-                )
+                git branch: 'maven-cli-dev', url: "https://github.com/selvasabapathy/project-examples.git"
             }
         }
 
         stage ('Build') {
             steps {
                 echo 'Build the application...'
-                rtMavenRun (
-                    tool: 'MAVEN-3.5.4',
-                    pom: 'maven-examples/maven-example/pom.xml',
-                    goals: 'clean install',
-                    deployerId: 'MAVEN_DEPLOYER',
-                    resolverId: 'MAVEN_RESOLVER'
-                )
+                sh 'jf mvn -f maven-examples/maven-example/pom.xml clean install'
             }
         }
 
         stage ('Build info') {
             steps {
                 echo 'Push build info to artifactory...'
-                rtPublishBuildInfo (
-                    serverId: "ARTIFACTORY_SERVER"
-                )
+                sh 'jf rt bp'
             }
         }
 
         stage ('Scan') {
             steps {
                 echo 'Scan for security & license...'
-                xrayScan (
-                    serverId: "ARTIFACTORY_SERVER",
-                    failBuild: false
-                )
+                sh 'jf xr am --fail false'
             }
         }
     }
