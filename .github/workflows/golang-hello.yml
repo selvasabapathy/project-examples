@@ -1,0 +1,30 @@
+name: "JFrog CLI Example"
+on:
+  push:
+    branches:
+      - go-cli-dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.12
+      - name: Build Go
+        run: go build -v ./...
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v1
+        env:
+          JF_ARTIFACTORY_SERVER: ${{ secrets.SELVAS_ARTIFACTORY }}
+      - name: Run JFrog CLI
+        run: |
+          # Collect environment variables for the build
+          jfrog rt bce
+          # Collect VCS details from git and add them to the build
+          jfrog rt bag
+          # Publish build info
+          jfrog rt bp
