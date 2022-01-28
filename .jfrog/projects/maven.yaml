@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  serverId: selvas-artifactory
+  snapshotRepo: pe-maven-cli-virtual
+  releaseRepo: pe-maven-cli-virtual
+deployer:
+  serverId: selvas-artifactory
+  snapshotRepo: pe-maven-cli-virtual
+  releaseRepo: pe-maven-cli-virtual
